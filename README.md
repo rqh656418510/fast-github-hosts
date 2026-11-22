@@ -10,7 +10,7 @@
 ##### FastGitHub End #####
 ```
 
-每次运行都会用新下载的内容替换标记之间的内容，不做去重；标记不存在时，会在文件末尾创建区块。标记行必须完全一致（允许前后空白）；若标记缺失一端、重复、顺序错误、嵌套，或带有额外文本，脚本会报错并保持文件不变。 写入前会过滤下载内容：**只保留主机条目**；所有注释（整行注释和行内 `# ...` 注释，包括时间戳、URL 等）和空行都会被丢弃。
+每次运行都会用新下载的内容替换标记之间的内容，不做去重；标记不存在时，会在文件末尾创建区块。标记行必须完全一致（允许前后空白）；若标记缺失一端、重复、顺序错误、嵌套，或带有额外文本，脚本会报错并保持文件不变。 写入前会过滤下载内容：只保留主机条目；所有注释（整行注释和行内 `# ...` 注释，包括时间戳、URL 等）和空行都会被丢弃。
 
 默认情况下，在发起网络请求前，脚本会检查目标 hosts 文件是否存在、是否可读、是否可写；如果目录不可写、目录属主不是当前用户/root，或目录可被其他用户写入且未设置 sticky，后续会回退到原地写入。检查失败或下载失败时会记录错误并退出，不继续更新文件。下载大小限制为 5 MiB，并会校验 IP 地址和主机名格式。下载按 UTF-8 解码（允许 BOM）；`/etc/hosts` 中原有的非 UTF-8 字节会原样保留。
 
@@ -29,7 +29,7 @@
 
 ## 安装步骤
 
-以下安装命令都在项目根目录中执行。
+以下安装命令都在项目根目录中执行，**只支持 Linux 系统（POSIX），不支持 Windows 系统**。
 
 ### CentOS 7 安装示例
 
@@ -123,6 +123,20 @@ sudo tail -f /var/log/fast-github.log
   - 配置文件 `config/debian12/fast-github.service` 增加了 `ProtectSystem=yes`。它只把 `/usr`、`/boot`、`/efi` 挂成只读，`/etc` 仍然可写，脚本才能原子替换 `/etc/hosts`；CentOS 7 的 `unit` 没有这一项。
   - 两个 service 都使用 `Type=oneshot`、`User=root`、`TimeoutStartSec=180`、`NoNewPrivileges=yes`、`ProtectHome=yes`，并都以 `/usr/bin/python3` 运行。
 
+### 修改定时更新的频率
+
+- 编辑已安装的 `/etc/systemd/system/fast-github.timer` 中的 `OnCalendar`，然后执行：
+
+```sh
+# 重新加载 systemd 配置
+sudo systemctl daemon-reload
+
+# 重启定时器以应用新的执行频率
+sudo systemctl restart fast-github.timer
+```
+
+如果要保留修改，则需同步更新仓库中的 `config/centos7/fast-github.timer` 或 `config/debian12/fast-github.timer`。两个发行版的默认抖动配置不同：CentOS 7 使用 `AccuracySec=5min`，Debian 12 使用 `RandomizedDelaySec=300`。
+
 ## 卸载步骤
 
 - 执行卸载操作：
@@ -159,20 +173,6 @@ grep -n FastGitHub /etc/hosts
 # 删除 /etc/hosts 中的 FastGitHub 标记区块
 sudo sed -i '/##### FastGitHub Start #####/,/##### FastGitHub End #####/d' /etc/hosts
 ```
-
-## 修改定时频率
-
-- 编辑已安装的 `/etc/systemd/system/fast-github.timer` 中的 `OnCalendar`，然后执行：
-
-```sh
-# 重新加载 systemd 配置
-sudo systemctl daemon-reload
-
-# 重启定时器以应用新的执行频率
-sudo systemctl restart fast-github.timer
-```
-
-如果要保留修改，则需同步更新仓库中的 `config/centos7/fast-github.timer` 或 `config/debian12/fast-github.timer`。两个发行版的默认抖动配置不同：CentOS 7 使用 `AccuracySec=5min`，Debian 12 使用 `RandomizedDelaySec=300`。
 
 ## 手动运行脚本
 
