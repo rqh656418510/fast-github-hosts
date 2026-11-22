@@ -14,7 +14,7 @@ from unittest import mock
 from urllib.error import HTTPError, URLError
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
-MODULE_PATH = os.path.join(PROJECT_ROOT, "fast-github.py")
+MODULE_PATH = os.path.join(PROJECT_ROOT, "fast-github-hosts.py")
 SPEC = importlib.util.spec_from_file_location("fast_github", MODULE_PATH)
 fast_github = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(fast_github)

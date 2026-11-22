@@ -1,4 +1,4 @@
-# fast-github
+# fast-github-hosts
 
 `fast-github` 会从 `https://raw.hellogithub.com/hosts` 下载 hosts 条目，并在 `/etc/hosts` 中维护以下标记区块：
 
@@ -39,7 +39,7 @@
 
 ```sh
 # 安装脚本并设置可执行权限
-sudo install -m 0755 fast-github.py /usr/local/bin/fast-github.py
+sudo install -m 0755 fast-github-hosts.py /usr/local/bin/fast-github-hosts.py
 
 # 安装 CentOS 7 的 systemd 服务
 sudo install -m 0644 config/centos7/fast-github.service /etc/systemd/system/fast-github.service
@@ -82,7 +82,7 @@ Debian 12 默认使用 systemd `252` 和 Python `3.11`，请先确认 `/usr/bin/
 
 ```sh
 # 安装脚本并设置可执行权限
-sudo install -m 0755 fast-github.py /usr/local/bin/fast-github.py
+sudo install -m 0755 fast-github-hosts.py /usr/local/bin/fast-github-hosts.py
 
 # 安装 Debian 12 的 systemd 服务
 sudo install -m 0644 config/debian12/fast-github.service /etc/systemd/system/fast-github.service
@@ -148,7 +148,7 @@ sudo systemctl disable --now fast-github.timer
 # 删除已安装的文件
 sudo rm -f /etc/systemd/system/fast-github.timer \
            /etc/systemd/system/fast-github.service \
-           /usr/local/bin/fast-github.py
+           /usr/local/bin/fast-github-hosts.py
 
 # 清理运行时锁文件
 sudo rm -f /run/fast-github.lock
@@ -180,7 +180,7 @@ sudo sed -i '/##### FastGitHub Start #####/,/##### FastGitHub End #####/d' /etc/
 
 ```sh
 # 正常更新 /etc/hosts
-sudo /usr/bin/python3 /usr/local/bin/fast-github.py
+sudo /usr/bin/python3 /usr/local/bin/fast-github-hosts.py
 ```
 
 ### 帮助：--help
@@ -189,7 +189,7 @@ sudo /usr/bin/python3 /usr/local/bin/fast-github.py
 
 ```sh
 # 查看脚本帮助
-/usr/bin/python3 /usr/local/bin/fast-github.py --help
+/usr/bin/python3 /usr/local/bin/fast-github-hosts.py --help
 ```
 
 ### 预览：--dry-run
@@ -198,7 +198,7 @@ sudo /usr/bin/python3 /usr/local/bin/fast-github.py
 
 ```sh
 # 预览将要写入的内容，不修改 hosts 文件
-sudo /usr/bin/python3 /usr/local/bin/fast-github.py --dry-run
+sudo /usr/bin/python3 /usr/local/bin/fast-github-hosts.py --dry-run
 ```
 
 - 跳过写权限检查和 `/run/fast-github.lock` 全局锁。
@@ -215,7 +215,7 @@ sudo /usr/bin/python3 /usr/local/bin/fast-github.py --dry-run
 cp /etc/hosts /tmp/hosts.preview
 
 # 更新指定的 hosts 文件
-sudo /usr/bin/python3 /usr/local/bin/fast-github.py --hosts-file /tmp/hosts.preview
+sudo /usr/bin/python3 /usr/local/bin/fast-github-hosts.py --hosts-file /tmp/hosts.preview
 ```
 
 - `--hosts-file` 参数的默认值是 `/etc/hosts`。
@@ -229,7 +229,7 @@ sudo /usr/bin/python3 /usr/local/bin/fast-github.py --hosts-file /tmp/hosts.prev
 cp /etc/hosts /tmp/hosts.preview
 
 # 以 dry-run 模式预览指定文件并输出 diff
-python3 /usr/local/bin/fast-github.py --dry-run --hosts-file /tmp/hosts.preview
+python3 /usr/local/bin/fast-github-hosts.py --dry-run --hosts-file /tmp/hosts.preview
 ```
 
 ## 运行单元测试

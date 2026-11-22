@@ -6,7 +6,7 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 User=root
-ExecStart=/usr/bin/python3 /usr/local/bin/fast-github.py
+ExecStart=/usr/bin/python3 /usr/local/bin/fast-github-hosts.py
 TimeoutStartSec=180
 NoNewPrivileges=yes
 ProtectHome=yes
