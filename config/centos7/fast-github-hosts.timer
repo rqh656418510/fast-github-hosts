@@ -1,11 +1,11 @@
 [Unit]
-Description=Run fast-github hourly
+Description=Run fast-github-hosts hourly
 
 [Timer]
 OnCalendar=hourly
 AccuracySec=5min
 Persistent=true
-Unit=fast-github.service
+Unit=fast-github-hosts.service
 
 [Install]
 WantedBy=timers.target

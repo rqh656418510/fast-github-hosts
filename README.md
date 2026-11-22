@@ -1,6 +1,6 @@
 # fast-github-hosts
 
-`fast-github` 会从 `https://raw.hellogithub.com/hosts` 下载 hosts 条目，并在 `/etc/hosts` 中维护以下标记区块：
+`fast-github-hosts` 会从 `https://raw.hellogithub.com/hosts` 下载 hosts 条目，并在 `/etc/hosts` 中维护以下标记区块：
 
 ```text
 ##### FastGitHubHosts Start #####
@@ -24,8 +24,8 @@
 
 ## 配置文件
 
-- `config/centos7/`：CentOS 7（systemd `219`）使用的 `fast-github.service` 和 `fast-github.timer`。
-- `config/debian12/`：Debian 12（systemd `252`）使用的 `fast-github.service` 和 `fast-github.timer`。
+- `config/centos7/`：CentOS 7（systemd `219`）使用的 `fast-github-hosts.service` 和 `fast-github-hosts.timer`。
+- `config/debian12/`：Debian 12（systemd `252`）使用的 `fast-github-hosts.service` 和 `fast-github-hosts.timer`。
 
 两个目录里的 `unit` 名称相同，安装时只选择当前发行版对应的目录。
 
@@ -35,7 +35,7 @@
 
 ### CentOS 7 安装示例
 
-如果 CentOS 7 系统尚未安装 Python 3，请先安装。CentOS 7 默认可能没有 `/usr/bin/python3`，请确认此路径可用；否则修改 `config/centos7/fast-github.service` 中的 `ExecStart`，指向实际安装的 Python 3。
+如果 CentOS 7 系统尚未安装 Python 3，请先安装。CentOS 7 默认可能没有 `/usr/bin/python3`，请确认此路径可用；否则修改 `config/centos7/fast-github-hosts.service` 中的 `ExecStart`，指向实际安装的 Python 3。
 
 - 安装文件：
 
@@ -44,10 +44,10 @@
 sudo install -m 0755 fast-github-hosts.py /usr/local/bin/fast-github-hosts.py
 
 # 安装 CentOS 7 的 systemd 服务
-sudo install -m 0644 config/centos7/fast-github.service /etc/systemd/system/fast-github.service
+sudo install -m 0644 config/centos7/fast-github-hosts.service /etc/systemd/system/fast-github-hosts.service
 
 # 安装 CentOS 7 的 systemd 定时器
-sudo install -m 0644 config/centos7/fast-github.timer /etc/systemd/system/fast-github.timer
+sudo install -m 0644 config/centos7/fast-github-hosts.timer /etc/systemd/system/fast-github-hosts.timer
 
 # 让 systemd 重新读取新增的配置
 sudo systemctl daemon-reload
@@ -57,20 +57,20 @@ sudo systemctl daemon-reload
 
 ```sh
 # 启用定时器并立即启动
-sudo systemctl enable --now fast-github.timer
+sudo systemctl enable --now fast-github-hosts.timer
 
 # 立即执行一次服务，不必等待下一个定时周期
-sudo systemctl start fast-github.service
+sudo systemctl start fast-github-hosts.service
 ```
 
 - 查看运行状态和日志：
 
 ```sh
 # 查看服务状态
-sudo systemctl status fast-github.service
+sudo systemctl status fast-github-hosts.service
 
 # 查看服务运行日志
-sudo journalctl -u fast-github.service
+sudo journalctl -u fast-github-hosts.service
 
 # 实时查看本地日志文件
 sudo tail -f /var/log/fast-github.log
@@ -78,7 +78,7 @@ sudo tail -f /var/log/fast-github.log
 
 ### Debian 12 安装示例
 
-Debian 12 默认使用 systemd `252` 和 Python `3.11`，请先确认 `/usr/bin/python3` 可用，否则修改 `config/debian12/fast-github.service` 中的 `ExecStart`，指向实际安装的 Python 3。
+Debian 12 默认使用 systemd `252` 和 Python `3.11`，请先确认 `/usr/bin/python3` 可用，否则修改 `config/debian12/fast-github-hosts.service` 中的 `ExecStart`，指向实际安装的 Python 3。
 
 - 安装文件：
 
@@ -87,10 +87,10 @@ Debian 12 默认使用 systemd `252` 和 Python `3.11`，请先确认 `/usr/bin/
 sudo install -m 0755 fast-github-hosts.py /usr/local/bin/fast-github-hosts.py
 
 # 安装 Debian 12 的 systemd 服务
-sudo install -m 0644 config/debian12/fast-github.service /etc/systemd/system/fast-github.service
+sudo install -m 0644 config/debian12/fast-github-hosts.service /etc/systemd/system/fast-github-hosts.service
 
 # 安装 Debian 12 的 systemd 定时器
-sudo install -m 0644 config/debian12/fast-github.timer /etc/systemd/system/fast-github.timer
+sudo install -m 0644 config/debian12/fast-github-hosts.timer /etc/systemd/system/fast-github-hosts.timer
 
 # 让 systemd 重新读取新增的配置
 sudo systemctl daemon-reload
@@ -100,44 +100,60 @@ sudo systemctl daemon-reload
 
 ```sh
 # 启用定时器并立即启动
-sudo systemctl enable --now fast-github.timer
+sudo systemctl enable --now fast-github-hosts.timer
 
 # 立即执行一次服务，不必等待下一个定时周期
-sudo systemctl start fast-github.service
+sudo systemctl start fast-github-hosts.service
 ```
 
 - 查看运行状态和日志：
 
 ```sh
 # 查看服务状态
-sudo systemctl status fast-github.service
+sudo systemctl status fast-github-hosts.service
 
 # 查看服务运行日志
-sudo journalctl -u fast-github.service
+sudo journalctl -u fast-github-hosts.service
 
 # 实时查看本地日志文件
 sudo tail -f /var/log/fast-github.log
 ```
 
 - Debian 12 与 CentOS 7 的主要配置差异：
-  - CentOS 7 的 systemd `219` 不支持 `RandomizedDelaySec`，因此 `config/centos7/fast-github.timer` 使用 `AccuracySec=5min`，让 systemd 在 5 分钟窗口内触发，降低所有机器整点同时请求的压力。
-  - Debian 12 的 systemd `252` 支持 `RandomizedDelaySec`，`config/debian12/fast-github.timer` 使用 `RandomizedDelaySec=300`，比 `AccuracySec` 提供更好的随机抖动。
-  - 配置文件 `config/debian12/fast-github.service` 增加了 `ProtectSystem=yes`。它只把 `/usr`、`/boot`、`/efi` 挂成只读，`/etc` 仍然可写，脚本才能原子替换 `/etc/hosts`；CentOS 7 的 `unit` 没有这一项。
+  - CentOS 7 的 systemd `219` 不支持 `RandomizedDelaySec`，因此 `config/centos7/fast-github-hosts.timer` 使用 `AccuracySec=5min`，让 systemd 在 5 分钟窗口内触发，降低所有机器整点同时请求的压力。
+  - Debian 12 的 systemd `252` 支持 `RandomizedDelaySec`，`config/debian12/fast-github-hosts.timer` 使用 `RandomizedDelaySec=300`，比 `AccuracySec` 提供更好的随机抖动。
+  - 配置文件 `config/debian12/fast-github-hosts.service` 增加了 `ProtectSystem=yes`。它只把 `/usr`、`/boot`、`/efi` 挂成只读，`/etc` 仍然可写，脚本才能原子替换 `/etc/hosts`；CentOS 7 的 `unit` 没有这一项。
   - 两个 service 都使用 `Type=oneshot`、`User=root`、`TimeoutStartSec=180`、`NoNewPrivileges=yes`、`ProtectHome=yes`，并都以 `/usr/bin/python3` 运行。
 
 ### 修改定时更新的频率
 
-- 编辑已安装的 `/etc/systemd/system/fast-github.timer` 中的 `OnCalendar`，然后执行：
+- 编辑已安装的 `/etc/systemd/system/fast-github-hosts.timer` 中的 `OnCalendar`，然后执行：
 
 ```sh
 # 重新加载 systemd 配置
 sudo systemctl daemon-reload
 
 # 重启定时器以应用新的执行频率
-sudo systemctl restart fast-github.timer
+sudo systemctl restart fast-github-hosts.timer
 ```
 
-如果要保留修改，则需同步更新仓库中的 `config/centos7/fast-github.timer` 或 `config/debian12/fast-github.timer`。两个发行版的默认抖动配置不同：CentOS 7 使用 `AccuracySec=5min`，Debian 12 使用 `RandomizedDelaySec=300`。
+如果要保留修改，则需同步更新仓库中的 `config/centos7/fast-github-hosts.timer` 或 `config/debian12/fast-github-hosts.timer`。两个发行版的默认抖动配置不同：CentOS 7 使用 `AccuracySec=5min`，Debian 12 使用 `RandomizedDelaySec=300`。
+
+## 从旧版本升级
+
+旧版本的单元名是 `fast-github.service` 和 `fast-github.timer`。安装新单元前请先停用并删除旧单元，否则新旧两个定时器会同时运行：
+
+```sh
+# 停用并清理旧单元（不存在时忽略报错）
+sudo systemctl disable --now fast-github.timer 2>/dev/null || true
+sudo rm -f /etc/systemd/system/fast-github.timer \
+           /etc/systemd/system/fast-github.service
+
+# 重新加载 systemd 配置
+sudo systemctl daemon-reload
+```
+
+脚本安装路径、`/run/fast-github.lock` 锁文件和 `/var/log/fast-github.log` 日志文件的位置不受这次改名影响。
 
 ## 卸载步骤
 
@@ -145,11 +161,11 @@ sudo systemctl restart fast-github.timer
 
 ```sh
 # 停用定时器
-sudo systemctl disable --now fast-github.timer
+sudo systemctl disable --now fast-github-hosts.timer
 
 # 删除已安装的文件
-sudo rm -f /etc/systemd/system/fast-github.timer \
-           /etc/systemd/system/fast-github.service \
+sudo rm -f /etc/systemd/system/fast-github-hosts.timer \
+           /etc/systemd/system/fast-github-hosts.service \
            /usr/local/bin/fast-github-hosts.py
 
 # 清理运行时锁文件
