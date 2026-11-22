@@ -3,14 +3,16 @@
 `fast-github` 会从 `https://raw.hellogithub.com/hosts` 下载 hosts 条目，并在 `/etc/hosts` 中维护以下标记区块：
 
 ```text
-##### FastGitHub Start #####
-140.82.112.26                 alive.github.com
-20.205.243.168                api.github.com
+##### FastGitHubHosts Start #####
+140.82.112.26        alive.github.com
+20.205.243.168       api.github.com
 ...
-##### FastGitHub End #####
+##### FastGitHubHosts End #####
 ```
 
 每次运行都会用新下载的内容替换标记之间的内容，不做去重；标记不存在时，会在文件末尾创建区块。标记行必须完全一致（允许前后空白）；若标记缺失一端、重复、顺序错误、嵌套，或带有额外文本，脚本会报错并保持文件不变。 写入前会过滤下载内容：只保留主机条目；所有注释（整行注释和行内 `# ...` 注释，包括时间戳、URL 等）和空行都会被丢弃。
+
+从旧版标记 `##### FastGitHub Start #####` 升级时，脚本只识别新标记，不会迁移或删除旧区块；请先按「卸载步骤」中的 `sed` 命令删除旧区块，否则旧条目会留在 `/etc/hosts` 中继续生效。
 
 默认情况下，在发起网络请求前，脚本会检查目标 hosts 文件是否存在、是否可读、是否可写；如果目录不可写、目录属主不是当前用户/root，或目录可被其他用户写入且未设置 sticky，后续会回退到原地写入。检查失败或下载失败时会记录错误并退出，不继续更新文件。下载大小限制为 5 MiB，并会校验 IP 地址和主机名格式。下载按 UTF-8 解码（允许 BOM）；`/etc/hosts` 中原有的非 UTF-8 字节会原样保留。
 
@@ -163,15 +165,15 @@ sudo systemctl daemon-reload
 - 如需同时删除 `/etc/hosts` 中的区块，先确认标记完整：
 
 ```sh
-# 查看 FastGitHub 标记所在行
-grep -n FastGitHub /etc/hosts
+# 查看 FastGitHubHosts 标记所在行
+grep -n FastGitHubHosts /etc/hosts
 ```
 
 - 确认后再执行（如果某个标记只有一端，`sed` 会一直删到文件末尾）：
 
 ```sh
-# 删除 /etc/hosts 中的 FastGitHub 标记区块
-sudo sed -i '/##### FastGitHub Start #####/,/##### FastGitHub End #####/d' /etc/hosts
+# 删除 /etc/hosts 中的 FastGitHubHosts 标记区块
+sudo sed -i '/##### FastGitHubHosts Start #####/,/##### FastGitHubHosts End #####/d' /etc/hosts
 ```
 
 ## 手动运行脚本
@@ -208,7 +210,7 @@ sudo /usr/bin/python3 /usr/local/bin/fast-github-hosts.py --dry-run
 
 ### 指定 hosts 文件：--hosts-file
 
-- 目标文件必须已经存在（脚本不会创建它）；通常先复制一份：
+- 下载、校验并写入目标文件，指定的目标文件必须已经存在（脚本不会创建它）；通常先复制一份：
 
 ```sh
 # 复制一份 hosts 文件用于测试

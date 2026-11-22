@@ -299,7 +299,7 @@ class UpdateTests(_TempPathsMixin, unittest.TestCase):
         self.assertEqual(result.entries, 1)
         self.assertEqual(result.mode, "dry_run")
         self.assertIn("+5.6.7.8 new.example", result.diff)
-        self.assertIn("+##### FastGitHub Start #####", result.diff)
+        self.assertIn("+##### FastGitHubHosts Start #####", result.diff)
         self.assertEqual(
             self.read_text(path), "127.0.0.1 localhost\n"
         )

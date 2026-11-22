@@ -45,9 +45,9 @@ MAX_DIFF_LINES = 200
 # dry-run diff 最大字节数
 MAX_DIFF_BYTES = 64 * 1024
 # 区块起始标记
-START_MARKER = "##### FastGitHub Start #####"
+START_MARKER = "##### FastGitHubHosts Start #####"
 # 区块结束标记
-END_MARKER = "##### FastGitHub End #####"
+END_MARKER = "##### FastGitHubHosts End #####"
 # 需要拒绝的行分隔符
 LINE_SEPARATOR_CHARACTERS = ("\x85", "\u2028", "\u2029")
 # 主机名单个标签的格式
@@ -346,21 +346,21 @@ def _parse_hosts_blocks(lines):
         stripped = line.strip()
         if stripped == START_MARKER:
             if pending is not None:
-                raise ValueError("hosts file contains invalid FastGitHub markers")
+                raise ValueError("hosts file contains invalid FastGitHubHosts markers")
             pending = index
         elif stripped == END_MARKER:
             if pending is None:
-                raise ValueError("hosts file contains invalid FastGitHub markers")
+                raise ValueError("hosts file contains invalid FastGitHubHosts markers")
             blocks.append((pending, index))
             pending = None
         elif stripped.startswith(START_MARKER) or stripped.startswith(
                 END_MARKER
         ):
             # 标记行必须完全一致，带额外文本视为损坏，避免重复追加区块。
-            raise ValueError("hosts file contains invalid FastGitHub markers")
+            raise ValueError("hosts file contains invalid FastGitHubHosts markers")
 
     if pending is not None or len(blocks) > 1:
-        raise ValueError("hosts file contains invalid FastGitHub markers")
+        raise ValueError("hosts file contains invalid FastGitHubHosts markers")
     return blocks
 
 
@@ -736,7 +736,7 @@ def update_hosts_once(logger, hosts_file=None, dry_run=False):
                 hosts_file,
             )
         logger.info(
-            "Updated %s; wrote %d host entries inside the FastGitHub block",
+            "Updated %s; wrote %d host entries inside the FastGitHubHosts block",
             hosts_file,
             result.entries,
         )
