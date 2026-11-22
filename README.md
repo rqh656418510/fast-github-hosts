@@ -29,6 +29,8 @@
 
 两个目录里的 `unit` 名称相同，安装时只选择当前发行版对应的目录。
 
+`fast-github-hosts.service` 是 `Type=oneshot`：每次运行结束就变为 `inactive (dead)`，因此定时任务的状态应查 `fast-github-hosts.timer`，每次运行的结果用 `journalctl -u fast-github-hosts.service` 查看。
+
 ## 安装步骤
 
 以下安装命令都在项目根目录中执行，**只支持 Linux 系统（POSIX），不支持 Windows 系统**。
@@ -63,13 +65,13 @@ sudo systemctl enable --now fast-github-hosts.timer
 sudo systemctl start fast-github-hosts.service
 ```
 
-- 查看运行状态和日志：
+- 查看定时器状态和运行日志：
 
 ```sh
-# 查看服务状态
-sudo systemctl status fast-github-hosts.service
+# 查看定时器状态与下次触发时间
+sudo systemctl status fast-github-hosts.timer
 
-# 查看服务运行日志
+# 查看最近一次运行的输出日志
 sudo journalctl -u fast-github-hosts.service
 
 # 实时查看本地日志文件
@@ -106,13 +108,13 @@ sudo systemctl enable --now fast-github-hosts.timer
 sudo systemctl start fast-github-hosts.service
 ```
 
-- 查看运行状态和日志：
+- 查看定时器状态和运行日志：
 
 ```sh
-# 查看服务状态
-sudo systemctl status fast-github-hosts.service
+# 查看定时器状态与下次触发时间
+sudo systemctl status fast-github-hosts.timer
 
-# 查看服务运行日志
+# 查看最近一次运行的输出日志
 sudo journalctl -u fast-github-hosts.service
 
 # 实时查看本地日志文件
