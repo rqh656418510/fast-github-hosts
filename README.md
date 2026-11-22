@@ -139,22 +139,6 @@ sudo systemctl restart fast-github-hosts.timer
 
 如果要保留修改，则需同步更新仓库中的 `config/centos7/fast-github-hosts.timer` 或 `config/debian12/fast-github-hosts.timer`。两个发行版的默认抖动配置不同：CentOS 7 使用 `AccuracySec=5min`，Debian 12 使用 `RandomizedDelaySec=300`。
 
-## 从旧版本升级
-
-旧版本的单元名是 `fast-github.service` 和 `fast-github.timer`。安装新单元前请先停用并删除旧单元，否则新旧两个定时器会同时运行：
-
-```sh
-# 停用并清理旧单元（不存在时忽略报错）
-sudo systemctl disable --now fast-github.timer 2>/dev/null || true
-sudo rm -f /etc/systemd/system/fast-github.timer \
-           /etc/systemd/system/fast-github.service
-
-# 重新加载 systemd 配置
-sudo systemctl daemon-reload
-```
-
-脚本安装路径、`/run/fast-github.lock` 锁文件和 `/var/log/fast-github.log` 日志文件的位置不受这次改名影响。
-
 ## 卸载步骤
 
 - 执行卸载操作：
@@ -265,3 +249,7 @@ python3 -m unittest discover -s tests -v
   - Windows：可以使用 WSL（安装 `python3`）运行。
 
 > Windows 平台还可以在 Git Bash / MSYS2 中使用 POSIX 版 `python3` 执行单元测试。需要注意，Git Bash 本身只是 Shell：如果它调用的是 Windows 原生 Python，没有 `fcntl` 接口，无法运行这套单元测试；需要让 Git Bash 指向 MSYS2 的 POSIX Python。
+
+## 鸣谢
+
+- [GitHub520](https://github.com/521xueweihan/GitHub520)
