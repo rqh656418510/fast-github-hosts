@@ -12,15 +12,13 @@
 
 每次运行都会用新下载的内容替换标记之间的内容，不做去重；标记不存在时，会在文件末尾创建区块。标记行必须完全一致（允许前后空白）；若标记缺失一端、重复、顺序错误、嵌套，或带有额外文本，脚本会报错并保持文件不变。 写入前会过滤下载内容：只保留主机条目；所有注释（整行注释和行内 `# ...` 注释，包括时间戳、URL 等）和空行都会被丢弃。
 
-从旧版标记 `##### FastGitHub Start #####` 升级时，脚本只识别新标记，不会迁移或删除旧区块；请先按「卸载步骤」中的 `sed` 命令删除旧区块，否则旧条目会留在 `/etc/hosts` 中继续生效。
-
-默认情况下，在发起网络请求前，脚本会检查目标 hosts 文件是否存在、是否可读、是否可写；如果目录不可写、目录属主不是当前用户/root，或目录可被其他用户写入且未设置 sticky，后续会回退到原地写入。检查失败或下载失败时会记录错误并退出，不继续更新文件。下载大小限制为 5 MiB，并会校验 IP 地址和主机名格式。下载按 UTF-8 解码（允许 BOM）；`/etc/hosts` 中原有的非 UTF-8 字节会原样保留。
+默认情况下，在发起网络请求前，脚本会检查目标 hosts 文件是否存在、是否可读、是否可写；如果目录不可写、目录属主不是当前用户 / `root`，或目录可被其他用户写入且未设置 `sticky`，后续会回退到原地写入。检查失败或下载失败时会记录错误并退出，不继续更新 hosts 文件。下载大小限制为 5 MiB，并会校验 IP 地址和主机名格式。下载按 UTF-8 解码（允许 BOM）；`/etc/hosts` 中原有的非 UTF-8 字节会原样保留。
 
 更新通过同目录临时文件原子替换，原子替换失败时保留原文件；如果 `/etc/hosts` 是 Bind Mount（例如容器环境）导致 `rename` 返回 `EBUSY`，脚本会退化为原地重写，此时更新不是原子的，写入中断可能留下部分内容。如果 `/etc/hosts` 有多个硬链接，脚本也会原地重写以保留所有链接（同样不是原子替换）。内容与当前区块完全一致时不会写文件，`mtime` 保持不变。
 
-真实更新时（包括 `--hosts-file` 指定的自定义文件），同一时间只允许一个实例运行：脚本会在 `/run/fast-github.lock` 上尝试非阻塞排他锁；如果另一个实例已经持锁，本次运行会跳过并返回 0。`--dry-run` 不加锁。如果锁文件无法打开（例如非 root 运行或 `/run` 不可用），脚本会记录警告后继续执行，此时不提供互斥保护。文件下载失败会重试（408、429 和 5xx 会重试，其余 4xx 不重试），并要求最终 URL 仍为 HTTPS；429/5xx 若返回 `Retry-After` 且不超过 10 秒，会按该值等待，超过则放弃本次重试。
+真实更新时（包括 `--hosts-file` 指定的自定义文件），同一时间只允许一个实例运行：脚本会在 `/run/fast-github.lock` 上尝试非阻塞排他锁；如果另一个实例已经持锁，本次运行会跳过并返回 0。使用 `--dry-run` 参数后不会加锁。如果锁文件无法打开（例如非 `root` 运行或 `/run` 不可用），脚本会记录警告后继续执行，此时不提供互斥保护。文件下载失败会重试（408、429 和 5xx 会重试，其余 4xx 不重试），并要求最终 URL 仍为 HTTPS；429 / 5xx 若返回 `Retry-After` 且不超过 10 秒，会按该值等待，超过则放弃本次重试。
 
-日志同时写入 systemd journal 和本地文件 `/var/log/fast-github.log`。非 root 运行时只写 stderr/journal，不会创建或占用该文件。本地日志以防止符号链接攻击、非阻塞的方式打开，避免 FIFO 阻塞；若日志文件不是由服务用户拥有、或可被其他用户写入，脚本会改为仅通过标准错误输出日志。该日志文件不会自动轮转，长期运行请自行配置 `logrotate` 或定期清理。脚本仅使用 Python 标准库，需要 Python `3.6` 及以上版本和 Linux 环境（POSIX）。
+日志同时写入 systemd journal 和本地文件 `/var/log/fast-github.log`，非 `root` 运行时只写 stderr / journal，不会创建或占用该文件。本地日志以防止符号链接攻击、非阻塞的方式打开，避免 FIFO 阻塞；若日志文件不是由服务用户拥有、或可被其他用户写入，脚本会改为仅通过标准错误输出日志。该日志文件不会自动轮转，长期运行请自行配置 `logrotate` 或定期清理。脚本仅使用 Python 标准库，需要 Python `3.6` 及以上版本和 Linux 环境（POSIX）。
 
 ## 配置文件
 
@@ -28,8 +26,6 @@
 - `config/debian12/`：Debian 12（systemd `252`）使用的 `fast-github-hosts.service` 和 `fast-github-hosts.timer`。
 
 两个目录里的 `unit` 名称相同，安装时只选择当前发行版对应的目录。
-
-`fast-github-hosts.service` 是 `Type=oneshot`：每次运行结束就变为 `inactive (dead)`，因此定时任务的状态应查 `fast-github-hosts.timer`，每次运行的结果用 `journalctl -u fast-github-hosts.service` 查看。
 
 ## 安装步骤
 
@@ -80,7 +76,7 @@ sudo tail -f /var/log/fast-github.log
 
 ### Debian 12 安装示例
 
-Debian 12 默认使用 systemd `252` 和 Python `3.11`，请先确认 `/usr/bin/python3` 可用，否则修改 `config/debian12/fast-github-hosts.service` 中的 `ExecStart`，指向实际安装的 Python 3。
+Debian 12 默认使用 systemd `252` 和 Python `3.11`，请先确认 `/usr/bin/python3` 此路径可用，否则修改 `config/debian12/fast-github-hosts.service` 中的 `ExecStart`，指向实际安装的 Python 3。
 
 - 安装文件：
 
@@ -121,6 +117,8 @@ sudo journalctl -u fast-github-hosts.service
 sudo tail -f /var/log/fast-github.log
 ```
 
+> 由于 `fast-github-hosts.service` 是 `Type=oneshot`：每次运行结束就变为 `inactive (dead)`，因此定时任务的状态应查 `fast-github-hosts.timer`，每次运行的结果用 `journalctl -u fast-github-hosts.service` 查看。
+
 - Debian 12 与 CentOS 7 的主要配置差异：
   - CentOS 7 的 systemd `219` 不支持 `RandomizedDelaySec`，因此 `config/centos7/fast-github-hosts.timer` 使用 `AccuracySec=5min`，让 systemd 在 5 分钟窗口内触发，降低所有机器整点同时请求的压力。
   - Debian 12 的 systemd `252` 支持 `RandomizedDelaySec`，`config/debian12/fast-github-hosts.timer` 使用 `RandomizedDelaySec=300`，比 `AccuracySec` 提供更好的随机抖动。
@@ -139,7 +137,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart fast-github-hosts.timer
 ```
 
-如果要保留修改，则需同步更新仓库中的 `config/centos7/fast-github-hosts.timer` 或 `config/debian12/fast-github-hosts.timer`。两个发行版的默认抖动配置不同：CentOS 7 使用 `AccuracySec=5min`，Debian 12 使用 `RandomizedDelaySec=300`。
+> 如果要保留修改，则需同步更新仓库中的 `config/centos7/fast-github-hosts.timer` 或 `config/debian12/fast-github-hosts.timer`。两个发行版的默认抖动配置不同：CentOS 7 使用 `AccuracySec=5min`，Debian 12 使用 `RandomizedDelaySec=300`。
 
 ## 卸载步骤
 
@@ -208,7 +206,7 @@ sudo /usr/bin/python3 /usr/local/bin/fast-github-hosts.py --dry-run
 - 跳过写权限检查和 `/run/fast-github.lock` 全局锁。
 - 日志会显示 `Would update ... N host entries would be written (dry run)`，并附上 unified diff（`Proposed changes:`，最多 200 行/64 KiB，超出会截断）；没有变化时显示 `already up to date (dry run)`。
 - 预览成功返回 0；目标文件不存在、不是普通文件、下载失败或下载内容无效时返回 1；目标文件会在下载前检查。
-- 因为不写系统 hosts 文件，普通用户也可以运行；非 root 运行时只写 stderr/journal，不会创建或占用 `/var/log/fast-github.log`。
+- 因为不写系统 hosts 文件，普通用户也可以运行；非 `root` 运行时只写 stderr/journal，不会创建或占用 `/var/log/fast-github.log`。
 
 ### 指定 hosts 文件：--hosts-file
 
@@ -223,8 +221,8 @@ sudo /usr/bin/python3 /usr/local/bin/fast-github-hosts.py --hosts-file /tmp/host
 ```
 
 - `--hosts-file` 参数的默认值是 `/etc/hosts`。
-- 使用自定义路径做真实更新时，仍会尝试 `/run/fast-github.lock`；如果以非 root 运行且 `/run` 不可写，会记录警告并继续，此时没有互斥保护。`--dry-run` 不加锁。
-- 可以配合非 `root` 用户使用，只要能读写目标 hosts 文件；非 root 真实更新会因无法打开锁文件而给出警告。
+- 使用自定义路径做真实更新时，仍会尝试 `/run/fast-github.lock`；如果以非 `root` 运行且 `/run` 不可写，会记录警告并继续，此时没有互斥保护。`--dry-run` 不加锁。
+- 可以配合非 `root` 用户使用，只要能读写目标 hosts 文件；非 `root` 真实更新会因无法打开锁文件而给出警告。
 - 如果目标目录属主不是当前用户/root，或目录可被其他用户写入且未设置 sticky，脚本会改用原地写入，避免原子替换的 rename 竞态。
 - 可以与 `--dry-run` 组合（同样需要先准备目标文件）：
 
