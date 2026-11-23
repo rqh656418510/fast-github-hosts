@@ -1,6 +1,6 @@
 # fast-github-hosts
 
-`fast-github-hosts` 会从 `https://raw.hellogithub.com/hosts` 下载 hosts 条目，并在 `/etc/hosts` 中维护以下标记区块：
+在 Linux 平台自动定时更新 `/etc/hosts` 文件，解决 GitHub 国内访问慢的问题。`fast-github-hosts` 会从 `https://raw.hellogithub.com/hosts` 下载 hosts 条目，并在 `/etc/hosts` 中维护以下标记区块：
 
 ```text
 ##### FastGitHubHosts Start #####
@@ -198,7 +198,7 @@ sudo /usr/bin/python3 /usr/local/bin/fast-github-hosts.py
 
 ### 预览：--dry-run
 
-- 只下载、校验并计算将要写入的内容，不修改系统的 hosts 文件：
+- 只从远端下载、校验并计算将要写入的内容，不修改系统的 `/etc/hosts` 文件：
 
 ```sh
 # 预览将要写入的内容，不修改 hosts 文件
@@ -212,7 +212,7 @@ sudo /usr/bin/python3 /usr/local/bin/fast-github-hosts.py --dry-run
 
 ### 指定 hosts 文件：--hosts-file
 
-- 下载、校验并写入目标文件，指定的目标文件必须已经存在（脚本不会创建它）；通常先复制一份：
+- 从远端下载、校验并写入 hosts 目标文件，指定的 hosts 目标文件必须已经存在（脚本不会创建它）；通常先复制一份 `/etc/hosts`：
 
 ```sh
 # 复制一份 hosts 文件用于测试
@@ -245,7 +245,7 @@ python3 /usr/local/bin/fast-github-hosts.py --dry-run --hosts-file /tmp/hosts.pr
 python3 -m unittest discover -s tests -v
 ```
 
-- 测试使用临时目录中的 hosts 文件，不会修改系统的 `/etc/hosts`。
+- 测试使用临时目录中的 hosts 文件，不会修改系统的 `/etc/hosts` 文件。
 - 测试依赖 POSIX 的 `fcntl`、`O_NOFOLLOW`、`geteuid` 和硬链接，需要在 Linux / POSIX 环境运行：
   - Linux：直接运行脚本。
   - Windows：可以使用 WSL（安装 `python3`）运行。
